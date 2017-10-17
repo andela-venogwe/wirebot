@@ -1,6 +1,9 @@
 {
   "name": "wirebot",
   "version": "1.0.0",
+  "engines": {
+    "node": "8.4.0"
+  },
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
