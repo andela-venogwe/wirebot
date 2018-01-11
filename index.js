@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const slackInteractiveMessages = require("@slack/interactive-messages");
 const { createSlackEventAdapter } = require("@slack/events-api");
 const SlackClient = require("@slack/client").WebClient;
+const { isWitnessValid } = require("./modules/validation/witnesses_validation");
 
 const {
   isDateValid,
@@ -102,6 +103,18 @@ slackEvents.on("message", event => {
         });
         break;
       case 4:
+        if (isWitnessValid(event.text) === false) {
+          sc.chat.postMessage(
+            event.channel,
+            "Kindly ensure all witnesses' Slack handles are in valid format and correct",
+            (err, res) => {
+              // console.log(res);
+            }
+          );
+
+          break;
+        }
+
         actions.saveWitnesses(event);
         confirmIncident(event.user, event.channel);
         break;
