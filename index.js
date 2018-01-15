@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const slackInteractiveMessages = require("@slack/interactive-messages");
 const { createSlackEventAdapter } = require("@slack/events-api");
 const SlackClient = require("@slack/client").WebClient;
+const { isLocationValid } = require("./modules/validation/location_validation");
 const {
   isDescriptionAdequate
 } = require("./modules/validation/description_validation");
@@ -90,6 +91,18 @@ slackEvents.on("message", event => {
         );
         break;
       case 1:
+        if (isLocationValid(event.text) === false) {
+          sc.chat.postMessage(
+            event.channel,
+            "The location should at minimum be in the format 'place, city, country'",
+            (err, res) => {
+              // console.log(res);
+            }
+          );
+
+          break;
+        }
+
         actions.saveLocation(event);
         sc.chat.postMessage(event.channel, "", categoryMessage, (err, res) => {
           // console.log(res);
