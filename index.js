@@ -4,8 +4,10 @@ const bodyParser = require("body-parser");
 const slackInteractiveMessages = require("@slack/interactive-messages");
 const { createSlackEventAdapter } = require("@slack/events-api");
 const SlackClient = require("@slack/client").WebClient;
+const {
+  isDescriptionAdequate
+} = require("./modules/validation/description_validation");
 const { isWitnessValid } = require("./modules/validation/witnesses_validation");
-
 const {
   isDateValid,
   isDateFuture
@@ -97,6 +99,18 @@ slackEvents.on("message", event => {
         console.log("Logic flaw??");
         break;
       case 3:
+        if (isDescriptionAdequate(event.text) === false) {
+          sc.chat.postMessage(
+            event.channel,
+            "Kindly add a bit more description of the incident",
+            (err, res) => {
+              // console.log(res);
+            }
+          );
+
+          break;
+        }
+
         actions.saveDescription(event);
         sc.chat.postMessage(event.channel, "", witnessesMessage, (err, res) => {
           // console.log(res);
