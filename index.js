@@ -1,6 +1,8 @@
 const express = require("express");
 const http = require("http");
 const bodyParser = require("body-parser");
+const axios = require("axios");
+const apiBaseUrl = process.env.API_BASE_URL;
 const slackInteractiveMessages = require("@slack/interactive-messages");
 const { createSlackEventAdapter } = require("@slack/events-api");
 const SlackClient = require("@slack/client").WebClient;
@@ -38,7 +40,7 @@ const port = process.env.PORT || 3000;
 const confirmIncident = (user, channel) => {
   const data = actions.tempIncidents[user];
   sc.chat.postMessage(channel, "", getConfirmationMessage(data), (err, res) => {
-    // console.log(res);
+    
   });
 };
 
@@ -51,7 +53,7 @@ slackEvents.on("message", event => {
   const userId = event.user;
   if (!actions.tempIncidents[userId]) {
     sc.chat.postMessage(event.channel, "", initiationMessage, (err, res) => {
-      // console.log(res);
+      
     });
   } else {
     const currentStep = actions.tempIncidents[userId].step;
@@ -62,7 +64,7 @@ slackEvents.on("message", event => {
           event.channel,
           "When did the incident occur? (dd-mm-yy)",
           (err, res) => {
-            // console.log(res);
+            
           }
         );
 
@@ -73,7 +75,7 @@ slackEvents.on("message", event => {
             event.channel,
             "You cannot report a future incident or Invalid date entered (dd-mm-yy)",
             (err, res) => {
-              // console.log(res);
+              
             }
           );
 
@@ -85,7 +87,7 @@ slackEvents.on("message", event => {
             event.channel,
             "You cannot report a future incident or Invalid date entered (dd-mm-yy)",
             (err, res) => {
-              // console.log(res);
+              
             }
           );
 
@@ -97,7 +99,7 @@ slackEvents.on("message", event => {
           event.channel,
           "Where did this happen? (place, city, country)",
           (err, res) => {
-            // console.log(res);
+            
           }
         );
         break;
@@ -107,7 +109,7 @@ slackEvents.on("message", event => {
             event.channel,
             "The location should at minimum be in the format 'place, city, country'",
             (err, res) => {
-              // console.log(res);
+              
             }
           );
 
@@ -116,7 +118,7 @@ slackEvents.on("message", event => {
 
         actions.saveLocation(event);
         sc.chat.postMessage(event.channel, "", categoryMessage, (err, res) => {
-          // console.log(res);
+          
         });
         break;
       case 3:
@@ -128,7 +130,7 @@ slackEvents.on("message", event => {
             event.channel,
             "Kindly add a bit more description of the incident",
             (err, res) => {
-              // console.log(res);
+              
             }
           );
 
@@ -137,7 +139,7 @@ slackEvents.on("message", event => {
 
         actions.saveDescription(event);
         sc.chat.postMessage(event.channel, "", witnessesMessage, (err, res) => {
-          // console.log(res);
+          
         });
         break;
       case 5:
@@ -146,7 +148,7 @@ slackEvents.on("message", event => {
             event.channel,
             "Kindly ensure all witnesses' Slack handles are in valid format and correct",
             (err, res) => {
-              // console.log(res);
+              
             }
           );
 
@@ -177,6 +179,25 @@ slackMessages.action("category", (payload, respond) => {
 });
 
 slackMessages.action("confirm", (payload, respond) => {
+  sc.users.info(payload.user.id)
+    .then(result => {
+      axios.post(`${apiBaseUrl}/users`, {
+        id: result.user.id,
+        email: result.user.profile.email,
+        name: result.user.profile.real_name_normalized,
+        imageUrl: result.user.profile.image_48
+      })
+      .then(result => {
+        
+      })
+      .catch(error => {
+        
+      });
+
+    }).catch(error => {
+      
+    });
+    
   actions.saveIncident(payload, respond);
   return {
     text: "Your incident has been logged"
