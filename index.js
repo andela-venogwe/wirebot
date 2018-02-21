@@ -8,6 +8,9 @@ const { isLocationValid } = require("./modules/validation/location_validation");
 const {
   isDescriptionAdequate
 } = require("./modules/validation/description_validation");
+const {
+  isSubjectAdequate
+} = require("./modules/validation/subject_validation");
 const { isWitnessValid } = require("./modules/validation/witnesses_validation");
 const {
   isDateValid,
@@ -57,6 +60,15 @@ slackEvents.on("message", event => {
     const currentStep = actions.tempIncidents[userId].step;
     switch (currentStep) {
       case 0:
+        if (!isSubjectAdequate(event.text)) {
+          sc.chat.postMessage(
+            event.channel,
+            "Kindly try to keep incident subject under 10 words",
+            (err, res) => {});
+
+          break;
+        }
+
         actions.saveSubject(event);
         sc.chat.postMessage(
           event.channel,
