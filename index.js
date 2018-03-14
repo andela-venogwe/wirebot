@@ -60,7 +60,7 @@ slackEvents.on("message", event => {
     const currentStep = actions.tempIncidents[userId].step;
     switch (currentStep) {
       case 0:
-        if (!isSubjectAdequate(event.text)) {
+        if (isSubjectAdequate(event.text)) {
           sc.chat.postMessage(
             event.channel,
             "Kindly try to keep incident subject under 10 words",
