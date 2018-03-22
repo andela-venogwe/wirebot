@@ -1,7 +1,7 @@
 const isWitnessValid = entered_witnesses => {
-  entered_witnesses_array = entered_witnesses.split(",");
+  let entered_witnesses_array = entered_witnesses.split(',');
 
-  regex_test_result_array = [];
+  let regex_test_result_array = [];
 
   entered_witnesses_array.forEach(entered_witness => {
     entered_witness = entered_witness.trim();
