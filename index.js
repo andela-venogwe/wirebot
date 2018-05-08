@@ -25,7 +25,8 @@ const {
   initiationMessage,
   categoryMessage,
   witnessesMessage,
-  getConfirmationMessage
+  getConfirmationMessage,
+  getTimeMessage
 } = require('./modules/messages');
 const actions = require('./modules/actions');
 const { slackUserLocation } = require('./modules/location_centres');
@@ -128,16 +129,15 @@ slackEvents.on('message', event => {
 
       actions.saveDate(event);
       sc.chat.postMessage(
-        event.channel,
-        'Where did this happen? (place, city, country)',
-        err => {
+        event.channel, '', getTimeMessage, err => {
           if (err) {
             logError(err);
           }
-        }
-      );
+        });
       break;
     case 2:
+      break;
+    case 3:
       if (isLocationValid(event.text) === false) {
         sc.chat.postMessage(
           event.channel,
@@ -159,10 +159,10 @@ slackEvents.on('message', event => {
         }
       });
       break;
-    case 3:
+    case 4:
       console.log('Logic flaw??'); // eslint-disable-line no-console
       break;
-    case 4:
+    case 5:
       if (!isDescriptionAdequate(event.text)) {
         if (!actions.tempIncidents[userId].description) {
           actions.tempIncidents[userId].description = event.text;
@@ -202,7 +202,7 @@ slackEvents.on('message', event => {
         }
       });
       break;
-    case 5:
+    case 6:
       if (isWitnessValid(event.text) === false) {
         sc.chat.postMessage(
           event.channel,
@@ -220,7 +220,7 @@ slackEvents.on('message', event => {
       actions.saveWitnesses(event);
       confirmIncident(event.user, event.channel);
       break;
-    case 6:
+    case 7:
       break;
     }
   }
@@ -231,6 +231,10 @@ slackMessages.action('report', (payload, respond) => {
   return {
     text: 'Just a sec'
   };
+});
+
+slackMessages.action('time_selection', (payload, respond) => {
+  actions.saveTime(payload, respond);
 });
 
 slackMessages.action('category', (payload, respond) => {

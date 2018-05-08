@@ -1,3 +1,5 @@
+const { populateHours, populateMinutes } = require('../modules/time_populator');
+
 const initiate = {
   attachments: [
     {
@@ -88,6 +90,10 @@ const getConfirmationMessage = (data) =>
             'short': false
           },
           {
+            'title': 'Time',
+            'value': `${data.time.hour}:${data.time.minute} ${data.time.ampm}`
+          },
+          {
             'title': 'Location',
             'value': data.location,
             'short': false
@@ -147,11 +153,65 @@ const witnessesMessage = {
   ],
 };
 
+const getTimeMessage = {
+  // Include timezone option?
+  // Format in which to send the time to the backend?
+  // How backend will handle the different timezones?
+  // Time to be in 12 or 24 hr format?
+  attachments: [
+    {
+      color: '#5A352D',
+      title: 'What time did this take place?',
+      callback_id: 'time_selection',
+      actions: [
+        {
+          name: 'select_hour',
+          text: 'Select Hour...',
+          value: 'hour',
+          type: 'select',
+          options: populateHours()
+        },
+        {
+          name: 'select_minute',
+          text: 'Select Minute...',
+          value: 'minute',
+          type: 'select',
+          options: populateMinutes()
+        },
+        {
+          name: 'select_ampm',
+          text: 'Select AM/PM...',
+          value: 'ampm',
+          type: 'select',
+          options: [
+            {
+              text: 'AM',
+              value: 'AM'
+            },
+            {
+              text: 'PM',
+              value: 'PM'
+            }
+          ]
+        },
+        {
+          name: 'submit',
+          text: 'Next',
+          type: 'button',
+          value: 'submit'
+        }
+      ]
+  
+    }
+  ]
+};
+
 
 module.exports = {
   initiationMessage: initiate,
   getDateMessage,
   getConfirmationMessage,
   categoryMessage,
-  witnessesMessage
+  witnessesMessage,
+  getTimeMessage
 };

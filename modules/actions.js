@@ -1,3 +1,5 @@
+const { logError } = require('./error_logger');
+
 const tempIncidents = {};
 
 const start = (payload, respond) => {
@@ -32,6 +34,59 @@ const saveDate = (event) => {
   //TODO: add message validation
   tempIncidents[userId].date = message;
 
+};
+
+const saveTime = (payload, respond) => {
+  const userId = payload.user.id;
+
+  switch(payload.actions[0].name) {
+  case 'select_hour':
+    if (!tempIncidents[userId].time) {
+      tempIncidents[userId].time = {
+        hour: parseInt(payload.actions[0].selected_options[0].value)
+      };
+
+      break;
+    } else {
+      tempIncidents[userId].time.hour = parseInt(payload.actions[0].selected_options[0].value);
+      break;
+    }
+  case 'select_minute':
+    if (!tempIncidents[userId].time) {
+      tempIncidents[userId].time = {
+        minute: parseInt(payload.actions[0].selected_options[0].value)
+      };
+
+      break;
+    } else {
+      tempIncidents[userId].time.minute = parseInt(payload.actions[0].selected_options[0].value);
+      break;
+    }
+  case 'select_ampm':
+    if (!tempIncidents[userId].time) {
+      tempIncidents[userId].time = {
+        ampm: payload.actions[0].selected_options[0].value
+      };
+
+      break;
+    } else {
+      tempIncidents[userId].time.ampm = payload.actions[0].selected_options[0].value;
+      break;
+    }
+  case 'submit':
+    if (!tempIncidents[userId].time || !tempIncidents[userId].time.hour || !tempIncidents[userId].time.minute || !tempIncidents[userId].time.ampm) {
+      break;
+    } else {
+      tempIncidents[userId].step += 1;
+
+      respond({
+        'text': 'Where did this happen? (place, city, country)'
+      }).catch(error => {
+        logError(error);
+      });
+      break;
+    }
+  }
 };
 
 const saveLocation = (event) => {
@@ -81,6 +136,7 @@ module.exports = {
   tempIncidents,
   saveSubject,
   saveDate,
+  saveTime,
   saveLocation,
   saveCategory,
   saveDescription,
