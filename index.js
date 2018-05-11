@@ -23,6 +23,7 @@ const {
 const { levelId } = require('./modules/levels');
 const {
   initiationMessage,
+  getLocationHandlerMessage,
   categoryMessage,
   witnessesMessage,
   getConfirmationMessage
@@ -31,6 +32,8 @@ const actions = require('./modules/actions');
 const { slackUserLocation } = require('./modules/location_centres');
 const { logError } = require('./modules/error_logger');
 const { postPnCMembers } = require('./modules/post_pnc_members');
+const { newIncidentNotifier } = require('./modules/new_incident_notifier');
+const { incidentHandlerVerification } = require('./modules/incident_handler_verification');
 
 dotenv.load();
 
@@ -151,16 +154,28 @@ slackEvents.on('message', event => {
       }
 
       actions.saveLocation(event);
-      sc.chat.postMessage(event.channel, '', categoryMessage, err => {
-        if (err) {
-          logError(err);
-        }
-      });
+      if (incidentHandlerVerification(event.text) === 'Elsewhere') {
+        sc.chat.postMessage(event.channel, '', getLocationHandlerMessage, err => {
+          if (err) {
+            logError(err);
+          }
+        });
+      } else {
+        actions.tempIncidents[userId].incidentHandler = incidentHandlerVerification(event.text);
+        actions.tempIncidents[userId].step += 1;
+        sc.chat.postMessage(event.channel, '', categoryMessage, err => {
+          if (err) {
+            logError(err);
+          }
+        });
+      }
       break;
     case 3:
-      console.log('Logic flaw??'); // eslint-disable-line no-console
       break;
     case 4:
+      console.log('Logic flaw??'); // eslint-disable-line no-console
+      break;
+    case 5:
       if (!isDescriptionAdequate(event.text)) {
         if (!actions.tempIncidents[userId].description) {
           actions.tempIncidents[userId].description = event.text;
@@ -200,7 +215,7 @@ slackEvents.on('message', event => {
         }
       });
       break;
-    case 5:
+    case 6:
       if (isWitnessValid(event.text) === false) {
         sc.chat.postMessage(
           event.channel,
@@ -218,10 +233,14 @@ slackEvents.on('message', event => {
       actions.saveWitnesses(event);
       confirmIncident(event.user, event.channel);
       break;
-    case 6:
+    case 7:
       break;
     }
   }
+});
+
+slackMessages.action('location_verifier', (payload, respond) => {
+  actions.saveLocationHandler(payload, respond);
 });
 
 slackMessages.action('report', (payload, respond) => {
@@ -338,6 +357,7 @@ slackMessages.action('confirm', (payload, respond) => {
             
             payload.incidentId = result.data.data.id;
             actions.saveIncident(payload, respond);
+            return newIncidentNotifier(result.data.data, incidentSummary.incidentHandler);
           })
           .catch((err) => {
             respond({
