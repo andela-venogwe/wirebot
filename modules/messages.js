@@ -63,6 +63,49 @@ const getDateMessage = {
   text: 'When did the incident occur? (dd-mm-yy)'
 };
 
+const getLocationHandlerMessage = {
+  attachments: [
+    {
+      color: '#5A352D',
+      title: 'Where should this be handled',
+      callback_id: 'location_verifier',
+      actions: [
+        {
+          name: 'select_location',
+          text: 'Select Location...',
+          value: 'location',
+          type: 'select',
+          options: [
+            {
+              text: 'New York',
+              value: 'New York'
+            },
+            {
+              text: 'Lagos',
+              value: 'Lagos'
+            },
+            {
+              text: 'Nairobi',
+              value: 'Nairobi'
+            },
+            {
+              text: 'Kampala',
+              value: 'Kampala'
+            }
+          ]
+        },
+        {
+          name: 'submit',
+          text: 'Next',
+          type: 'button',
+          value: 'submit'
+        }
+      ]
+    
+    }
+  ]
+};
+
 const getConfirmationMessage = (data) =>
 {
   return {
@@ -151,6 +194,7 @@ const witnessesMessage = {
 module.exports = {
   initiationMessage: initiate,
   getDateMessage,
+  getLocationHandlerMessage,
   getConfirmationMessage,
   categoryMessage,
   witnessesMessage
