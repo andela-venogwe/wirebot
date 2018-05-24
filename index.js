@@ -23,20 +23,19 @@ const {
 const { levelId } = require('./modules/levels');
 const {
   initiationMessage,
-  getLocationHandlerMessage,
   categoryMessage,
   witnessesMessage,
   getConfirmationMessage
 } = require('./modules/messages');
 const actions = require('./modules/actions');
 const { slackUserLocation } = require('./modules/location_centres');
-const { logError } = require('./modules/error_logger');
-const { postPnCMembers } = require('./modules/post_pnc_members');
-const { newIncidentNotifier } = require('./modules/new_incident_notifier');
-const { incidentHandlerVerification } = require('./modules/incident_handler_verification');
 
 dotenv.load();
 
+const { logError } = require('./modules/error_logger');
+
+const slackChannels = process.env.SLACK_CHANNELS;
+const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
 const apiBaseUrl = process.env.API_BASE_URL;
 const slackEvents = createSlackEventAdapter(
   process.env.SLACK_VERIFICATION_TOKEN
@@ -154,28 +153,16 @@ slackEvents.on('message', event => {
       }
 
       actions.saveLocation(event);
-      if (incidentHandlerVerification(event.text) === 'Elsewhere') {
-        sc.chat.postMessage(event.channel, '', getLocationHandlerMessage, err => {
-          if (err) {
-            logError(err);
-          }
-        });
-      } else {
-        actions.tempIncidents[userId].incidentHandler = incidentHandlerVerification(event.text);
-        actions.tempIncidents[userId].step += 1;
-        sc.chat.postMessage(event.channel, '', categoryMessage, err => {
-          if (err) {
-            logError(err);
-          }
-        });
-      }
+      sc.chat.postMessage(event.channel, '', categoryMessage, err => {
+        if (err) {
+          logError(err);
+        }
+      });
       break;
     case 3:
-      break;
-    case 4:
       console.log('Logic flaw??'); // eslint-disable-line no-console
       break;
-    case 5:
+    case 4:
       if (!isDescriptionAdequate(event.text)) {
         if (!actions.tempIncidents[userId].description) {
           actions.tempIncidents[userId].description = event.text;
@@ -215,7 +202,7 @@ slackEvents.on('message', event => {
         }
       });
       break;
-    case 6:
+    case 5:
       if (isWitnessValid(event.text) === false) {
         sc.chat.postMessage(
           event.channel,
@@ -233,14 +220,10 @@ slackEvents.on('message', event => {
       actions.saveWitnesses(event);
       confirmIncident(event.user, event.channel);
       break;
-    case 7:
+    case 6:
       break;
     }
   }
-});
-
-slackMessages.action('location_verifier', (payload, respond) => {
-  actions.saveLocationHandler(payload, respond);
 });
 
 slackMessages.action('report', (payload, respond) => {
@@ -357,7 +340,6 @@ slackMessages.action('confirm', (payload, respond) => {
             
             payload.incidentId = result.data.data.id;
             actions.saveIncident(payload, respond);
-            return newIncidentNotifier(result.data.data, incidentSummary.incidentHandler);
           })
           .catch((err) => {
             respond({
@@ -392,8 +374,49 @@ slackMessages.action('witnesses', (payload, respond) => {
   };
 });
 
+const peopleCultureChannels = slackChannels.split(',');
+
 cron.schedule('0 22 * * 1', function() {
-  postPnCMembers();
+  peopleCultureChannels.map(peopleCultureChannel => {
+    let formattedPeopleCultureChannel = peopleCultureChannel.trim();
+
+    sc.groups.info(formattedPeopleCultureChannel)
+      .then(groupDetails => {
+        groupDetails.group.members.map(member => {
+          sc.users.info(member)
+            .then(memberDetails => {
+              if (memberDetails.user.is_bot === false) {
+                if (memberDetails.user.deleted === true) {
+                  // POST to delete? API endpoint
+                }
+
+                axios.post(`${apiBaseUrl}/users`, {
+                  userId: memberDetails.user.id,
+                  email: memberDetails.user.profile.email,
+                  username: memberDetails.user.profile.real_name_normalized,
+                  imageUrl: memberDetails.user.profile.image_48,
+                  roleId: 2,
+                  location: slackUserLocation(memberDetails.user.tz)
+                }).catch(err => {
+                  logError(err);
+                });
+              }
+            }).catch(err => {
+              logError(err);
+            });
+        });
+      }).catch(err => {
+        logError(err);
+      });
+  });
+
+  axios.post(slackWebhookUrl, {
+    'username': 'wirebot',
+    'icon_emoji': ':slightly_smiling_face:',
+    'text': 'Cron job completed'
+  }).catch(err => {
+    logError(err);
+  });
 });
 
 // Start a basic HTTP server
