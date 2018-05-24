@@ -399,6 +399,7 @@ cron.schedule('0 22 * * 1', function() {
 // Start a basic HTTP server
 const app = express();
 app.use(bodyParser.json());
+app.use('/status', (req, res) => res.status(200).send('Server up and running.'));
 app.use('/slack/events', slackEvents.expressMiddleware());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/slack/actions', slackMessages.expressMiddleware());
