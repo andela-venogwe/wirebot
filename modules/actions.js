@@ -1,6 +1,3 @@
-const { categoryMessage } = require('./messages');
-const { logError } = require('./error_logger');
-
 const tempIncidents = {};
 
 const start = (payload, respond) => {
@@ -46,26 +43,6 @@ const saveLocation = (event) => {
 
 };
 
-const saveLocationHandler = (payload, respond) => {
-  const userId = payload.user.id;
-
-  switch(payload.actions[0].name) {
-  case 'select_location':
-    tempIncidents[userId].incidentHandler = payload.actions[0].selected_options[0].value;
-    break;
-  case 'submit':
-    if (!tempIncidents[userId].incidentHandler) {
-      break;
-    } else {
-      tempIncidents[userId].step += 1;
-      respond(categoryMessage).catch(error => {
-        logError(error);
-      });
-      break;
-    }
-  }
-};
-
 const saveCategory = (payload, respond) => {
   const userId = payload.user.id;
   tempIncidents[userId].category = payload.actions[0].value;
@@ -105,7 +82,6 @@ module.exports = {
   saveSubject,
   saveDate,
   saveLocation,
-  saveLocationHandler,
   saveCategory,
   saveDescription,
   saveIncident,
