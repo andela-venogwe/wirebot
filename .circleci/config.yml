@@ -7,11 +7,11 @@ jobs:
   build:
     <<: *defaults
     steps:
+      - setup_remote_docker
       - checkout
       - restore_cache:
           keys:
             - wirebot-dependency-cache-{{ checksum "package.json" }}
-      - setup_remote_docker
       - run:
           name: Install npm version > 5.7.1
           command: npmv=$(echo $(npm -v) | head -c 1); if [ "$npmv" -lt "6" ]; then sudo npm i -g npm; else echo "npm v6+ exists in Dockers latest image; you can remove this script now"; fi
@@ -21,7 +21,6 @@ jobs:
       - save_cache:
           key: wirebot-dependency-cache-{{ checksum "package.json" }}
           paths:
-            - /caches/app.tar
             - /opt/circleci/nodejs/9.8.0/lib/node_modules/npm
             - /node_modules
   test:
@@ -60,11 +59,12 @@ workflows:
   version: 2
   test-coverage-deploy:
     jobs:
-      - build
       - test:
           requires:
             - build
-      - coverage
+      - coverage:
+          requires:
+            - test
       - deploy:
           requires:
             - test
