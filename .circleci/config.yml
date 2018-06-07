@@ -21,6 +21,8 @@ jobs:
             - ~/wirebot/node_modules
   test:
     <<: *defaults
+    environment:
+      CC_TEST_REPORTER_ID: $CC_TEST_REPORTER_ID # set this in the circleci dash
     steps:
       - setup_remote_docker
       - checkout
@@ -29,18 +31,7 @@ jobs:
             - wirebot-dependency-cache-{{ checksum "package-lock.json" }}
       - run:
           name: Run tests
-          command: npm test
-      - persist_to_workspace:
-          root: ~/wirebot/coverage
-          paths:
-            - lcov.info
-  coverage:
-    <<: *defaults
-    environment:
-      CC_TEST_REPORTER_ID: $CC_TEST_REPORTER_ID # set this in the circleci dash
-    steps:
-      - attach_workspace:
-          at: coverage
+          command: npm test-coverage-deploy
       - run:
           name: Setup Code Climate test-reporter
           command: |
@@ -67,9 +58,6 @@ workflows:
   test-coverage-deploy:
     jobs:
       - test
-      - coverage:
-          requires:
-            - test
       - deploy:
           requires:
             - test
