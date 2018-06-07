@@ -3,24 +3,24 @@ defaults: &defaults
   working_directory: ~/wirebot
   docker:
     - image: circleci/node:latest
+defaultSteps: &defaultSteps
+  steps:
+    - setup_remote_docker
+    - checkout
+    - restore_cache:
+        keys:
+          - wirebot-dependency-cache-{{ checksum "package-lock.json" }}
+    - run:
+        name: Install packages
+        command: npm i
+    - save_cache:
+        key: wirebot-dependency-cache-{{ checksum "package-lock.json" }}
+        paths:
+          - ~/wirebot/node_modules
 jobs:
-  build:
-    <<: *defaults
-    steps:
-      - setup_remote_docker
-      - checkout
-      - restore_cache:
-          keys:
-            - wirebot-dependency-cache-{{ checksum "package-lock.json" }}
-      - run:
-          name: Install packages
-          command: npm i
-      - save_cache:
-          key: wirebot-dependency-cache-{{ checksum "package-lock.json" }}
-          paths:
-            - ~/wirebot/node_modules
   test:
     <<: *defaults
+    <<: *defaultSteps
     steps:
       - run:
           name: Run tests
@@ -48,6 +48,7 @@ jobs:
     <<: *defaults
     environment:
       PROJECT_NAME: wire-bot
+    <<: *defaultSteps
     steps:
       - run:
           name: Build and deploy application
@@ -57,9 +58,7 @@ workflows:
   test-coverage-deploy:
     jobs:
       - build
-      - test:
-          requires:
-            - build
+      - test
       - coverage
       - deploy:
           requires:
