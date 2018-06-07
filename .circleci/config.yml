@@ -11,12 +11,12 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - wirebot-dependency-cache-{{ checksum "package.json" }}
+            - wirebot-cache-{{ checksum "package.json" }}
       - run:
           name: Install packages
           command: npm ci
       - save_cache:
-          key: wirebot-dependency-cache-{{ checksum "package.json" }}
+          key: wirebot-cache-{{ checksum "package.json" }}
           paths:
             - /root/.npm
   test:
