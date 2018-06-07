@@ -11,14 +11,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - wirebot-dependency-cache-{{ checksum "package-lock.json" }}
+            - wirebot-dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Install packages
           command: npm i
       - save_cache:
-          key: wirebot-dependency-cache-{{ checksum "package-lock.json" }}
+          key: wirebot-dependency-cache-{{ checksum "package.json" }}
           paths:
-            - ~/wirebot/node_modules
+            - ./node_modules
   test:
     <<: *defaults
     steps:
