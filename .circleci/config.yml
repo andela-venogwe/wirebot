@@ -57,15 +57,15 @@ jobs:
         command: chmod +x .circleci/deploy.sh && .circleci/deploy.sh
 workflows:
   version: 2
-  test-deploy:
+  test-coverage-deploy:
     jobs:
+      - build
       - test:
         requires:
           - build
       - coverage
       - deploy:
         requires:
-          - build
           - test
         filters:
           branches:
