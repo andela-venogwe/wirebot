@@ -5,6 +5,7 @@ defaults: &defaults
     - image: circleci/node:9.8.0
 jobs:
   build:
+    <<: *defaults
     steps:
       - restore_cache:
         keys:
