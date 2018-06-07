@@ -2,7 +2,7 @@ version: 2
 defaults: &defaults
   working_directory: ~/wirebot
   docker:
-    - image: circleci/node:9.8.0
+    - image: circleci/node:latest
 jobs:
   build:
     <<: *defaults
@@ -21,6 +21,7 @@ jobs:
       - save_cache:
           key: wirebot-dependency-cache-{{ checksum "package.json" }}
           paths:
+            - /usr/local/lib/node_modules
             - /opt/circleci/nodejs/9.8.0/lib/node_modules/npm
             - /node_modules
   test:
