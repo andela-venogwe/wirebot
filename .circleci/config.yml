@@ -14,7 +14,7 @@ jobs:
             - wirebot-dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Install packages
-          command: npm i
+          command: npm ci
       - save_cache:
           key: wirebot-dependency-cache-{{ checksum "package.json" }}
           paths:
