@@ -26,7 +26,7 @@ jobs:
           name: Run tests
           command: npm test
       - persist_to_workspace:
-          root: coverage
+          root: ~/wirebot/coverage
           paths:
             - lcov.info
   coverage:
