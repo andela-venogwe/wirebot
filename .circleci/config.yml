@@ -8,15 +8,15 @@ jobs:
     <<: *defaults
     steps:
       - restore_cache:
-        keys:
-          - wirebot-dependency-cache-{{ checksum "package.json" }}
+          keys:
+            - wirebot-dependency-cache-{{ checksum "package.json" }}
       - setup_remote_docker
       - checkout
       - run:
-        command: npmv=$(echo $(npm -v) | head -c 1); if [ "$npmv" -lt "6" ]; then npm i -g npm; else echo "npm v6+ exists in Dockers latest image; you can remove this script now"; fi
+          command: npmv=$(echo $(npm -v) | head -c 1); if [ "$npmv" -lt "6" ]; then npm i -g npm; else echo "npm v6+ exists in Dockers latest image; you can remove this script now"; fi
       - run:
-        name: Install packages
-        command: npm ci
+          name: Install packages
+          command: npm ci
       - save_cache:
           key: wirebot-dependency-cache-{{ checksum "package.json" }}
           paths:
@@ -38,12 +38,12 @@ jobs:
       CC_TEST_REPORTER_ID: $CC_TEST_REPORTER_ID # set this in the circleci dash
     steps:
       - attach_workspace:
-        at: coverage
+          at: coverage
       - run:
-        name: Setup Code Climate test-reporter
-        command: |
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
+          name: Setup Code Climate test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
       - run:
           name: Send coverage to Code Climate
           command: ./cc-test-reporter upload-coverage coverage/lcov.info
@@ -53,20 +53,20 @@ jobs:
       PROJECT_NAME: wire-bot
     steps:
       - run:
-        name: Build and deploy application
-        command: chmod +x .circleci/deploy.sh && .circleci/deploy.sh
+          name: Build and deploy application
+          command: chmod +x .circleci/deploy.sh && .circleci/deploy.sh
 workflows:
   version: 2
   test-coverage-deploy:
     jobs:
       - build
       - test:
-        requires:
-          - build
+          requires:
+            - build
       - coverage
       - deploy:
-        requires:
-          - test
+          requires:
+            - test
         filters:
           branches:
             only:
